@@ -9,9 +9,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,21 +30,49 @@ class MainActivity : ComponentActivity() {
 fun EnglishMasterApp() {
     var sentence by remember { mutableStateOf("") }
     var result by remember { mutableStateOf("") }
-    var selectedSection by remember { mutableStateOf("Home") }
+    var grammarResult by remember { mutableStateOf("") }
+    var selectedSection by remember { mutableStateOf(0) }
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ) {
+    Scaffold(
+        bottomBar = {
+            NavigationBar {
+                NavigationBarItem(
+                    selected = selectedSection == 0,
+                    onClick = { selectedSection = 0 },
+                    icon = {},
+                    label = { Text("Home", maxLines = 1) }
+                )
+
+                NavigationBarItem(
+                    selected = selectedSection == 1,
+                    onClick = { selectedSection = 1 },
+                    icon = {},
+                    label = { Text("Grammar", maxLines = 1) }
+                )
+
+                NavigationBarItem(
+                    selected = selectedSection == 2,
+                    onClick = { selectedSection = 2 },
+                    icon = {},
+                    label = { Text("Vocabulary", maxLines = 1, fontSize = 11.sp) }
+                )
+            }
+        }
+    ) { padding ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(padding)
+                .windowInsetsPadding(WindowInsets.safeDrawing)
                 .verticalScroll(rememberScrollState())
                 .padding(18.dp)
         ) {
+
             Text(
                 text = "English Master AI",
                 style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
 
@@ -52,63 +81,55 @@ fun EnglishMasterApp() {
                 style = MaterialTheme.typography.bodyMedium
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                listOf("Home", "Grammar", "Vocabulary").forEach { section ->
-                    Button(
-                        onClick = { selectedSection = section },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(section)
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             when (selectedSection) {
-                "Home" -> {
+
+                0 -> {
                     Text(
                         "Sentence Analyzer",
-                        style = MaterialTheme.typography.titleLarge
+                        style = MaterialTheme.typography.headlineSmall
                     )
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     Text("Write an English sentence below:")
+
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     OutlinedTextField(
                         value = sentence,
                         onValueChange = {
                             sentence = it
                             result = ""
+                            grammarResult = ""
                         },
                         modifier = Modifier.fillMaxWidth(),
                         placeholder = {
                             Text("Example: Education is the backbone of a nation.")
                         },
-                        minLines = 3
+                        minLines = 3,
+                        maxLines = 6
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Button(
                         onClick = {
-                            result = if (sentence.isBlank()) {
-                                "Please enter a sentence first."
+                            if (sentence.isBlank()) {
+                                result = "Please enter a sentence first."
+                                grammarResult = ""
                             } else {
                                 val phrases = sentence
                                     .split(Regex("[,;:]"))
                                     .map { it.trim() }
                                     .filter { it.isNotEmpty() }
 
-                                phrases.mapIndexed { index, phrase ->
+                                result = phrases.mapIndexed { index, phrase ->
                                     "${index + 1}. $phrase"
                                 }.joinToString("\n\n")
+
+                                grammarResult = checkBasicGrammar(sentence)
                             }
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -117,81 +138,117 @@ fun EnglishMasterApp() {
                     }
 
                     if (result.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(18.dp))
 
-                        Card(modifier = Modifier.fillMaxWidth()) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                Text(
-                                    "Phrase Breakdown",
-                                    style = MaterialTheme.typography.titleMedium
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(result)
-                            }
-                        }
+                        InfoCard(
+                            title = "Phrase Breakdown",
+                            description = result
+                        )
+
+                        InfoCard(
+                            title = "Basic Grammar Check",
+                            description = grammarResult
+                        )
+
+                        InfoCard(
+                            title = "Bengali Translation",
+                            description = "AI translation will be added after connecting the secure AI service."
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    FeatureCard(
+                    InfoCard(
                         "Grammar Analysis",
-                        "Understand sentence structure and grammar."
+                        "Learn sentence structure, tense and parts of speech."
                     )
 
-                    FeatureCard(
+                    InfoCard(
                         "Phrase Translation",
-                        "Learn English phrases with Bengali meanings."
+                        "Understand English phrases with Bengali meanings."
                     )
 
-                    FeatureCard(
+                    InfoCard(
                         "BCS English Practice",
-                        "Prepare with vocabulary and grammar exercises."
+                        "Practice vocabulary and grammar for competitive exams."
                     )
 
-                    FeatureCard(
+                    InfoCard(
                         "News Reader",
                         "Read international news and learn useful expressions."
                     )
                 }
 
-                "Grammar" -> {
+                1 -> {
                     Text(
                         "Grammar Learning",
-                        style = MaterialTheme.typography.titleLarge
+                        style = MaterialTheme.typography.headlineSmall
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    FeatureCard(
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    InfoCard(
                         "Parts of Speech",
-                        "Noun, Pronoun, Verb, Adjective, Adverb and more."
+                        "Noun, Pronoun, Verb, Adjective, Adverb, Preposition, Conjunction and Interjection."
                     )
-                    FeatureCard(
+
+                    InfoCard(
                         "Sentence Structure",
-                        "Subject, Verb, Object and sentence patterns."
+                        "Subject + Verb + Object. Learn how English sentences are formed."
                     )
-                    FeatureCard(
+
+                    InfoCard(
                         "Tense",
-                        "Learn the twelve English tense forms."
+                        "Present, Past and Future tense with their twelve common forms."
+                    )
+
+                    InfoCard(
+                        "Subject-Verb Agreement",
+                        "Learn how subjects and verbs agree in a sentence."
+                    )
+
+                    InfoCard(
+                        "Right Form of Verbs",
+                        "Practice the correct use of English verbs."
                     )
                 }
 
-                "Vocabulary" -> {
+                2 -> {
                     Text(
                         "Vocabulary Notebook",
-                        style = MaterialTheme.typography.titleLarge
+                        style = MaterialTheme.typography.headlineSmall
                     )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        "Sample GRE Vocabulary",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+
                     Spacer(modifier = Modifier.height(12.dp))
 
                     val words = listOf(
-                        "Abundant — প্রচুর",
-                        "Benevolent — দয়ালু",
-                        "Candid — অকপট",
-                        "Diligent — পরিশ্রমী",
-                        "Eloquent — বাগ্মী"
+                        "Abundant" to "প্রচুর",
+                        "Benevolent" to "দয়ালু",
+                        "Candid" to "অকপট",
+                        "Diligent" to "পরিশ্রমী",
+                        "Eloquent" to "বাগ্মী",
+                        "Ephemeral" to "ক্ষণস্থায়ী",
+                        "Meticulous" to "অতিসতর্ক",
+                        "Obsolete" to "সেকেলে",
+                        "Pragmatic" to "বাস্তববাদী",
+                        "Resilient" to "ঘুরে দাঁড়াতে সক্ষম"
                     )
 
-                    words.forEach { word ->
-                        FeatureCard(word, "Learn this word and revise it regularly.")
+                    words.forEach { (word, meaning) ->
+                        InfoCard(word, meaning)
                     }
+
+                    Text(
+                        "More vocabulary and personal word saving will be added in the next version.",
+                        style = MaterialTheme.typography.bodySmall
+                    )
                 }
             }
 
@@ -199,28 +256,58 @@ fun EnglishMasterApp() {
 
             Text(
                 "English Master AI • Version 1.0",
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                style = MaterialTheme.typography.bodySmall
             )
         }
     }
 }
 
+fun checkBasicGrammar(text: String): String {
+    val lower = text.lowercase()
+    val suggestions = mutableListOf<String>()
+
+    if ("this problems" in lower) {
+        suggestions.add(
+            "Suggestion: Use 'these problems' instead of 'this problems'."
+        )
+    }
+
+    if ("amid this situation" in lower) {
+        suggestions.add(
+            "Suggestion: 'In this situation' sounds more natural here."
+        )
+    }
+
+    if (suggestions.isEmpty()) {
+        return "No matching common error was detected by the basic offline checker. This does not guarantee that the sentence is grammatically correct."
+    }
+
+    return suggestions.joinToString("\n\n")
+}
+
 @Composable
-fun FeatureCard(title: String, description: String) {
+fun InfoCard(
+    title: String,
+    description: String
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 10.dp)
+            .padding(bottom = 12.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
             Text(
-                title,
-                style = MaterialTheme.typography.titleMedium
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
             )
-            Spacer(modifier = Modifier.height(5.dp))
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             Text(
-                description,
+                text = description,
                 style = MaterialTheme.typography.bodyMedium
             )
         }

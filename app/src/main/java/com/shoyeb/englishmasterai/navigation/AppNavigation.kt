@@ -1,13 +1,16 @@
 
-
 package com.shoyeb.englishmasterai.navigation
 
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation.compose.*
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 
 @Composable
 fun AppNavigation() {
@@ -21,12 +24,15 @@ fun AppNavigation() {
         "Quiz"
     )
 
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = backStackEntry?.destination?.route ?: "Home"
+
     Scaffold(
         bottomBar = {
             NavigationBar {
                 items.forEach { item ->
                     NavigationBarItem(
-                        selected = false,
+                        selected = currentRoute == item,
                         onClick = {
                             navController.navigate(item) {
                                 popUpTo("Home") {
@@ -37,45 +43,80 @@ fun AppNavigation() {
                             }
                         },
                         icon = {},
-                        label = { Text(item) }
+                        label = {
+                            Text(item, maxLines = 1)
+                        }
                     )
                 }
             }
         }
     ) { padding ->
+
         NavHost(
             navController = navController,
             startDestination = "Home",
-            modifier = Modifier.padding(padding)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
         ) {
             composable("Home") {
-                PlaceholderScreen("English Master AI", "Welcome to your learning app")
+                PlaceholderScreen(
+                    "English Master AI",
+                    "Welcome to your English learning app."
+                )
             }
+
             composable("Grammar") {
-                PlaceholderScreen("Grammar", "Grammar lessons will appear here")
+                PlaceholderScreen(
+                    "Grammar Learning",
+                    "Grammar lessons and exercises."
+                )
             }
+
             composable("Vocabulary") {
-                PlaceholderScreen("Vocabulary", "GRE vocabulary will appear here")
+                PlaceholderScreen(
+                    "Vocabulary",
+                    "GRE words and vocabulary notebook."
+                )
             }
+
             composable("News") {
-                PlaceholderScreen("News", "News and articles will appear here")
+                PlaceholderScreen(
+                    "News Reader",
+                    "International news and article learning."
+                )
             }
+
             composable("Quiz") {
-                PlaceholderScreen("BCS Quiz", "Practice questions will appear here")
+                PlaceholderScreen(
+                    "BCS English Practice",
+                    "Practice English MCQ questions."
+                )
             }
         }
     }
 }
 
 @Composable
-fun PlaceholderScreen(title: String, message: String) {
+fun PlaceholderScreen(
+    title: String,
+    message: String
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(20.dp)
     ) {
-        Text(title, style = MaterialTheme.typography.headlineMedium)
+        Text(
+            text = title,
+            style = MaterialTheme.typography.headlineMedium
+        )
+
         Spacer(modifier = Modifier.height(12.dp))
-        Text(message)
+
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyLarge
+        )
     }
 }
